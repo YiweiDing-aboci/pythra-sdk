@@ -1,0 +1,30 @@
+# Source files (only publish dist/)
+src/
+tsconfig.json
+
+# Development
+*.log
+.git/
+.github/
+.vscode/
+.idea/
+
+# Tests
+__tests__/
+*.test.ts
+*.test.tsx
+*.spec.ts
+*.spec.tsx
+coverage/
+
+# Config
+.eslintrc*
+.prettierrc*
+.editorconfig
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Misc
+*.tsbuildinfo
