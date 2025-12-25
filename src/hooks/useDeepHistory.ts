@@ -4,7 +4,7 @@ export function useDeepHistory() {
   const [messages, setMessages] = useState<string[]>([])
 
   const addMessage = useCallback((msg: string) => {
-    setMessages((prev) => [...prev, msg])
+    setMessages(prev => [...prev, msg])
   }, [])
 
   return {
