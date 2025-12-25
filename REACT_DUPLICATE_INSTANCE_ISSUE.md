@@ -208,6 +208,64 @@ module.exports = {
 }
 ```
 
+### Expo / React Native (Metro Bundler)
+
+在 Expo 或 React Native 项目中使用本地库时，需要配置 Metro bundler：
+
+```javascript
+// metro.config.js
+const { getDefaultConfig } = require("@expo/metro-config");
+const path = require('node:path');
+
+const config = getDefaultConfig(__dirname);
+
+// 添加 pythra-sdk 的 watchFolders
+const pythraPath = path.resolve(__dirname, '../pythra-sdk');
+config.watchFolders = [pythraPath];
+
+// 配置解析器
+config.resolver.nodeModulesPaths = [
+  path.resolve(__dirname, 'node_modules'),
+];
+
+// 关键配置：强制使用主项目的 React 和 React Native 实例
+config.resolver.extraNodeModules = {
+  'pythra-sdk': pythraPath,
+  'react': path.resolve(__dirname, 'node_modules/react'),
+  'react-native': path.resolve(__dirname, 'node_modules/react-native'),
+};
+
+module.exports = config;
+```
+
+**额外步骤：清理库的 React 依赖**
+
+即使配置了 `peerDependencies`，库的 `node_modules` 中可能仍然安装了 React。需要手动删除：
+
+```bash
+# 删除库中的 React 相关依赖
+cd pythra-sdk
+rm -rf node_modules/react node_modules/react-native node_modules/@react-native
+
+# 重新构建
+npm run build
+
+# 清除 Expo 缓存
+cd ../your-expo-app
+rm -rf node_modules/.cache .expo
+
+# 重启开发服务器（带缓存清理）
+npx expo start -c
+```
+
+**可选：清除 watchman 缓存**
+
+如果仍有问题，可能需要清除 watchman 缓存：
+
+```bash
+watchman watch-del-all
+```
+
 ## 原理解释
 
 ### 为什么会有多个 React 实例？
