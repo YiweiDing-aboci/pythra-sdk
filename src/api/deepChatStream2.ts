@@ -2,7 +2,6 @@ import { chunkTest } from "../mock/chunk copy";
 import { DeepSetMessage } from "../types";
 import { processDeepMessage } from "../utils/processDeepMessage";
 import { extractPlainText } from "../utils/tools";
-import { getChatExtract } from "./getChatExtract";
 
 interface SendStreamRequestParams {
   conversationId: string;
@@ -104,7 +103,6 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
           return [...pre, lastMessage!]
         })
       } else if (chunk?.type === 'messageEnd') { // 处理工具数据
-        const extractRes = await getChatExtract(responseMessage)
         const processResult = await processDeepMessage(responseMessage, true)
         setMessages(pre => {
           const lastMessage = pre.pop()!;

@@ -1,5 +1,6 @@
 import { DeepSetMessage } from "../types";
 import { PythraClient } from '../client/PythraClient';
+import { processDeepMessage } from "../utils/processDeepMessage";
 
 
 interface SendStreamRequestParams {
@@ -35,7 +36,9 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
     // 设置超时时间 (30分钟)
     xhr.timeout = 30 * 60 * 1000;
 
-    xhr.onprogress = () => {
+    let responseMessage = ''
+
+    xhr.onprogress = async() => {
         const newData = xhr.responseText.substring(lastProcessedIndex);
         lastProcessedIndex = xhr.responseText.length;
         
@@ -59,6 +62,7 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
               
               try {
                 const chunk = JSON.parse(jsonStr);
+                //#region 处理片段
                 if (chunk?.type === 'think') {
                   setMessages(pre => {
                     const lastMessage = pre.pop()!;
@@ -70,12 +74,12 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
                         const status = chunk?.data?.status || 'doing';
                         originStep.status = status;
                         originStep.content = extractPlainText(chunk?.data?.thinkingContent?.reasoning || '')
-
+          
                         // 处理 todo List
                         if (chunk?.data?.toolParams?.todos) {
                           originStep.todoList = chunk.data.toolParams.todos
                         }
-
+          
                         // 处理web搜索数据
                         if (chunk?.data?.message === 'Validate') {
                           const validates = originStep.validates || [];
@@ -132,23 +136,29 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
                     return [...pre, lastMessage!]
                   })
                 } else if (chunk?.type === 'message') { // 处理工具数据
+                  responseMessage += chunk?.data || ''
+                  const processResult = await processDeepMessage(responseMessage)
                   setMessages(pre => {
                     const lastMessage = pre.pop()!;
                     if (lastMessage?.type && lastMessage.type === 'bot') {
                       lastMessage.isThinking = false;
-                      lastMessage.content += chunk?.data || ''
+                      lastMessage.content = responseMessage
+                      lastMessage.processData = processResult
                     }
                     return [...pre, lastMessage!]
                   })
                 } else if (chunk?.type === 'messageEnd') { // 处理工具数据
+                  const processResult = await processDeepMessage(responseMessage, true)
                   setMessages(pre => {
                     const lastMessage = pre.pop()!;
                     if (lastMessage?.type && lastMessage.type === 'bot') {
                       lastMessage.isCreating = false;
+                      lastMessage.processData = processResult
                     }
                     return [...pre, lastMessage!]
                   })
                 }
+                //#endregion
 
               } catch (parseError) {
                 console.warn('解析JSON失败:', parseError, '原始数据:', jsonStr);
