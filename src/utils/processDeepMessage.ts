@@ -55,12 +55,43 @@ function processContentWithChart(input: string): {
 }
 
 /**
+ * 处理JSON代码块
+ */
+function processContentWithJson(input: string): {
+  content: string;
+  jsonButtons: { [key: string]: any };
+} {
+  const jsonBt: { [key: string]: any } = {};
+  let jsonProcessText = input;
+  let jsonIndex = 1;
+
+  // 匹配 ```json ... ```
+  const jsonRegex = /```json\s*([\s\S]*?)```/gi;
+
+  jsonProcessText = jsonProcessText.replace(jsonRegex, (_match, jsonContent) => {
+    const placeholder = `{{JSON_${jsonIndex}}}`;
+    try {
+      jsonBt[placeholder] = JSON.parse(jsonContent.trim());
+    } catch (e) {
+      jsonBt[placeholder] = {};
+    }
+    jsonIndex++;
+
+    return placeholder;
+  });
+
+  return {
+    content: jsonProcessText,
+    jsonButtons: jsonBt
+  };
+}
+
+/**
  * 处理来源占位符
  */
 function processContentWithSources(input: string): {
   content: string;
   sourceButtons: { [key: string]: number };
-  chartButtons: { [key: string]: number };
 } {
   const sourceBt: { [key: string]: number } = {};
   let sourceProcessText = input;
@@ -71,7 +102,7 @@ function processContentWithSources(input: string): {
   // 匹配 <!-- id="任意ID" type="source" -->，支持单引号和双引号
   const sourceRegex = /<!--\s*id\s*=\s*["']([^"']+)["']\s+type\s*=\s*["']source["']\s*-->/gi;
 
-  sourceProcessText = sourceProcessText.replace(sourceRegex, (match, idStr) => {
+  sourceProcessText = sourceProcessText.replace(sourceRegex, (_match, idStr) => {
     let currentIndex: number;
 
     if (!idToIndex.has(idStr)) {
@@ -90,12 +121,9 @@ function processContentWithSources(input: string): {
     return placeholder;
   });
 
-  const chartResult = processContentWithChart(sourceProcessText);
-
   return {
-    content: chartResult.content,
-    sourceButtons: sourceBt,
-    chartButtons: chartResult.chartButtons
+    content: sourceProcessText,
+    sourceButtons: sourceBt
   };
 }
 
@@ -147,6 +175,7 @@ export async function processDeepMessage(
   let entityButtons: { [key: string]: EntityItem } = {};
   let sourceButtons: { [key: string]: number } = {};
   let chartButtons: { [key: string]: number } = {};
+  let jsonButtons: { [key: string]: any } = {};
 
   // 1. 先处理实体（如果有）
   if (entities && entities.length > 0) {
@@ -155,17 +184,27 @@ export async function processDeepMessage(
     entityButtons = entityResult.entityButtons;
   }
 
-  // 2. 处理来源和图表
+  // 2. 处理来源
   const sourceResult = processContentWithSources(resultContent);
   resultContent = sourceResult.content;
   sourceButtons = sourceResult.sourceButtons;
-  chartButtons = sourceResult.chartButtons;
+
+  // 3. 处理图表
+  const chartResult = processContentWithChart(resultContent);
+  resultContent = chartResult.content;
+  chartButtons = chartResult.chartButtons;
+
+  // 4. 处理JSON代码块
+  const jsonResult = processContentWithJson(resultContent);
+  resultContent = jsonResult.content;
+  jsonButtons = jsonResult.jsonButtons;
 
   return {
     content: resultContent,
     entityButtons,
     sourceButtons,
     chartButtons,
+    jsonButtons,
     entities
   };
 }

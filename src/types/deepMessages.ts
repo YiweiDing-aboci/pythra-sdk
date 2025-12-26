@@ -64,6 +64,7 @@ export interface ProcessedMessageData {
   entityButtons: { [key: string]: EntityItem };
   sourceButtons: { [key: string]: number };
   chartButtons: { [key: string]: number };
+  jsonButtons: { [key: string]: any };
   entities: EntityItem[];
 }
 

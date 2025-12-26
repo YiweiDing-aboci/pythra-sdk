@@ -35,7 +35,8 @@ export function useDeepRoom() {
         entityButtons: {},
         sourceButtons:  {},
         chartButtons: {},
-        entities: []
+        entities: [],
+        jsonButtons: {}
       }
     }
     setMessages(pre => ([...pre, newUserMessage, newBotMessage]))
