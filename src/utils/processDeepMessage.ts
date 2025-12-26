@@ -1,3 +1,4 @@
+import { getChatExtract } from "../api/getChatExtract";
 import { EntityItem, ProcessedMessageData } from "../types";
 
 function getCodePointIndexMap(inputString: string) {
@@ -147,12 +148,33 @@ function processContentWithEntities(
 
   array.forEach((entity: any, index: number) => {
     const { start, end } = entity;
-    const beforeText = resultText.slice(0, codeMap.get(start));
-    const afterText = resultText.slice(codeMap.get(end));
+
+    // 获取映射后的索引位置
+    const startIndex = codeMap.get(start);
+    const endIndex = codeMap.get(end);
+
+    // 验证索引有效性
+    if (startIndex === undefined || endIndex === undefined) {
+      // console.warn(`Invalid entity indices: start=${start}, end=${end}`);
+      return;
+    }
+
+    if (startIndex < 0 || endIndex > resultText.length || startIndex >= endIndex) {
+      console.warn(`Out of range entity: start=${startIndex}, end=${endIndex}, textLength=${resultText.length}`);
+      return;
+    }
+
     const placeholder = `{{ENTITY_${index}}}`;
 
+    // 使用数组方式拼接，避免字符串长度超限
+    const parts = [
+      resultText.slice(0, startIndex),
+      placeholder,
+      resultText.slice(endIndex)
+    ];
+
     entityBts[placeholder] = entity;
-    resultText = beforeText + placeholder + afterText;
+    resultText = parts.join('');
   });
 
   return {
@@ -164,25 +186,19 @@ function processContentWithEntities(
 /**
  * 处理深度消息内容
  * @param content 原始消息内容
- * @param entities 实体列表（可选）
+ * @param needEntityExtract 是否需要进行实体提取和替换（可选）
  * @returns 处理后的数据，包含 processedContent 和各种按钮映射
  */
 export async function processDeepMessage(
   content: string,
-  entities= [] as EntityItem[]
+  needEntityExtract = false
 ): Promise<ProcessedMessageData> {
   let resultContent = content;
   let entityButtons: { [key: string]: EntityItem } = {};
   let sourceButtons: { [key: string]: number } = {};
   let chartButtons: { [key: string]: number } = {};
   let jsonButtons: { [key: string]: any } = {};
-
-  // 1. 先处理实体（如果有）
-  if (entities && entities.length > 0) {
-    const entityResult = processContentWithEntities(resultContent, entities);
-    resultContent = entityResult.content;
-    entityButtons = entityResult.entityButtons;
-  }
+  let entities: EntityItem[] = [];
 
   // 2. 处理来源
   const sourceResult = processContentWithSources(resultContent);
@@ -198,6 +214,16 @@ export async function processDeepMessage(
   const jsonResult = processContentWithJson(resultContent);
   resultContent = jsonResult.content;
   jsonButtons = jsonResult.jsonButtons;
+
+  // 5. 处理实体（如果需要）
+  if (needEntityExtract) {
+    const {entities}  = await getChatExtract(resultContent);
+    if (entities && entities.length > 0) {
+      const entityResult = processContentWithEntities(resultContent, entities);
+      resultContent = entityResult.content;
+      entityButtons = entityResult.entityButtons;
+    }
+  }
 
   return {
     content: resultContent,

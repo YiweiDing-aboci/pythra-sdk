@@ -3,7 +3,6 @@ import { extractPlainText } from "../utils/tools"
 import { getDeepHistory } from "../api/chatHistory"
 import { DeepBotMessage, DeepHumanMessage, DeepMessage, DeepSetMessage, DeepStep } from "../types"
 import { processDeepMessage } from "../utils/processDeepMessage"
-import { getChatExtract } from "../api/getChatExtract"
 
 export function useDeepHistory() : {
   messages: DeepMessage[],
@@ -22,8 +21,7 @@ export function useDeepHistory() : {
         const m = res[i]
         if (m.type === 'bot') {
           try {
-            const extractRes = await getChatExtract(m.content)
-            const processResult = await processDeepMessage(m.content, extractRes.entities)
+            const processResult = await processDeepMessage(m.content, true)
 
             setMessages(prev => {
               const updated = [...prev]
@@ -66,13 +64,7 @@ async function requestDeepHistory (conversationId: string) {
         type: 'bot',
         id: Date.now() + 'bot',
         content: m.content,
-        processData: {
-          content: m.content,
-          entityButtons: {},
-          sourceButtons: {},
-          chartButtons: {},
-          entities: []
-        }
+        processData: await processDeepMessage(m.content)
       }
       if (metadata?.sources && metadata?.sources.length > 0) {
         botMessage.sources = metadata.sources

@@ -105,7 +105,7 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
         })
       } else if (chunk?.type === 'messageEnd') { // 处理工具数据
         const extractRes = await getChatExtract(responseMessage)
-        const processResult = await processDeepMessage(responseMessage, extractRes.entities)
+        const processResult = await processDeepMessage(responseMessage, true)
         setMessages(pre => {
           const lastMessage = pre.pop()!;
           if (lastMessage?.type && lastMessage.type === 'bot') {
