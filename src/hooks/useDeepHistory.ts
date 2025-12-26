@@ -2,6 +2,8 @@ import { useCallback, useState } from "react"
 import { extractPlainText } from "../utils/tools"
 import { getDeepHistory } from "../api/chatHistory"
 import { DeepBotMessage, DeepHumanMessage, DeepMessage, DeepSetMessage, DeepStep } from "../types"
+import { processDeepMessage } from "../utils/processDeepMessage"
+import { getChatExtract } from "../api/getChatExtract"
 
 export function useDeepHistory() : {
   messages: DeepMessage[],
@@ -13,6 +15,30 @@ export function useDeepHistory() : {
   const getHistory = useCallback(async (conversationId: string) => {
     const res = await requestDeepHistory(conversationId)
     setMessages(res)
+
+    // 后台处理 bot 消息，逐个更新 processData
+    setTimeout(async() => {
+      for (let i = 0; i < res.length; i++) {
+        const m = res[i]
+        if (m.type === 'bot') {
+          try {
+            const extractRes = await getChatExtract(m.content)
+            const processResult = await processDeepMessage(m.content, extractRes.entities)
+
+            setMessages(prev => {
+              const updated = [...prev]
+              updated[i] = {
+                ...updated[i],
+                processData: processResult
+              } as DeepBotMessage
+              return updated
+            })
+          } catch (error) {
+            console.error('Failed to process bot message:', error)
+          }
+        }
+      }
+    }, 500)
   }, [])
 
   return {
@@ -23,22 +49,30 @@ export function useDeepHistory() : {
 }
 
 async function requestDeepHistory (conversationId: string) {
-  const r1 = await getDeepHistory(conversationId)
-  if (!r1.success) return []
-  return r1.data.messages[0].map((m: any) => {
+  const history: DeepMessage[] = []
+  const historyResponse = await getDeepHistory(conversationId)
+  if (!historyResponse.success) return history
+  for (const m of historyResponse.data.messages[0]) {
     if (m.role === 'user') {
       const userMessage: DeepHumanMessage = {
         type: 'human',
         id: Date.now() + 'user',
         content: m.content
       }
-      return userMessage
+      history.push(userMessage)
     } else {
       const metadata = JSON.parse(m.metadata)
       const botMessage: DeepBotMessage = {
         type: 'bot',
         id: Date.now() + 'bot',
-        content: m.content
+        content: m.content,
+        processData: {
+          content: m.content,
+          entityButtons: {},
+          sourceButtons: {},
+          chartButtons: {},
+          entities: []
+        }
       }
       if (metadata?.sources && metadata?.sources.length > 0) {
         botMessage.sources = metadata.sources
@@ -46,9 +80,10 @@ async function requestDeepHistory (conversationId: string) {
       if (metadata?.thinkStatus) {
         botMessage.steps = processThinkStatus(metadata.thinkStatus)
       }
-      return botMessage
+      history.push(botMessage)
     }
-  })
+  }
+  return history
 }
 
 function processThinkStatus (thinkStatus: any[]): DeepStep[] {

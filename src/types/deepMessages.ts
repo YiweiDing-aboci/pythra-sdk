@@ -50,6 +50,23 @@ export interface DeepStep {
   results?: string
 }
 
+export interface EntityItem {
+  text: string;
+  type: string;
+  start: number;
+  end: number;
+  language: string;
+  context: any;
+}
+
+export interface ProcessedMessageData {
+  content: string;
+  entityButtons: { [key: string]: EntityItem };
+  sourceButtons: { [key: string]: number };
+  chartButtons: { [key: string]: number };
+  entities: EntityItem[];
+}
+
 /**
  * Bot message in deep conversation
  */
@@ -59,6 +76,7 @@ export interface DeepBotMessage {
   content: string
   isThinking?: boolean
   isCreating?: boolean
+  processData: ProcessedMessageData
   head?: {
     title: string
     description: string

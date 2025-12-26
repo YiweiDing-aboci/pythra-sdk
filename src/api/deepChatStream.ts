@@ -16,7 +16,6 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
   const {deepUrl, deepAccessToken, accessToken} = PythraClient.getConfig()
 
   const promise = new Promise<void>((resolve, reject) => {
-    console.log('🚀🚀🚀🚀🚀🚀🚀🚀\n\n\n\n','现在是真实请求哈','\n\n\n\n🎈🎈🎈🎈🎈🎈🎈🎈🎈')
     // 检查网络连接状态
     if (typeof navigator !== 'undefined' && navigator.onLine === false) {
       reject(new Error('设备未连接到网络，请检查网络设置'));

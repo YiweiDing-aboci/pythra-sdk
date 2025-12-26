@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { DeepMessage, DeepSetMessage } from "../types";
 import { createConversation } from "../api/conversation";
-import { sendStreamRequest } from "../api/deepChatStream";
+import { sendStreamRequest } from "../api/deepChatStream2";
 import { useDeepHistory } from "./useDeepHistory";
 
 export function useDeepRoom() {
@@ -29,6 +29,13 @@ export function useDeepRoom() {
       head: {
         title: 'Master Orchestrator tool_result',
         description: 'Thinking · ~8 min',
+      },
+      processData: {
+        content: '',
+        entityButtons: {},
+        sourceButtons:  {},
+        chartButtons: {},
+        entities: []
       }
     }
     setMessages(pre => ([...pre, newUserMessage, newBotMessage]))
