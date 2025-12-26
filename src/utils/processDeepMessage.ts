@@ -141,7 +141,7 @@ function processContentWithEntities(
  */
 export async function processDeepMessage(
   content: string,
-  entities?: EntityItem[]
+  entities= [] as EntityItem[]
 ): Promise<ProcessedMessageData> {
   let resultContent = content;
   let entityButtons: { [key: string]: EntityItem } = {};
