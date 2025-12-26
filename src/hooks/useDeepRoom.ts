@@ -1,7 +1,7 @@
 import { useCallback, useState } from "react";
 import { DeepMessage, DeepSetMessage } from "../types";
 import { createConversation } from "../api/conversation";
-import { sendStreamRequest } from "../api/deepChatStream2";
+import { sendStreamRequest } from "../api/deepChatStream";
 import { useDeepHistory } from "./useDeepHistory";
 
 export function useDeepRoom() {
