@@ -1,3 +1,3 @@
-export * from "./hooks/useDeepHistory"
+export * from "./hooks/useDeepRoom"
 export * from "./client/PythraClient"
 export * from "./types"
