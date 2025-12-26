@@ -1,4 +1,4 @@
-import { PythraClient } from './PythraClient';
+import { PythraClient } from '../client/PythraClient';
 
 /**
  * Internal request options

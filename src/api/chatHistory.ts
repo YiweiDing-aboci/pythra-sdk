@@ -1,4 +1,4 @@
-import { deepRequest } from '../client/request';
+import { deepRequest } from './request';
 
 /**
  * Chat message
@@ -54,7 +54,6 @@ interface DeepHistoryResponse {
  * @internal
  */
 export async function getDeepHistory(conversationId: string): Promise<DeepHistoryResponse> {
-  console.log('🚀🚀🚀🚀🚀🚀🚀🚀\n\n\n\n','丁凯乐来拿数据了 出来吧神龙','\n\n\n\n🎈🎈🎈🎈🎈🎈🎈🎈🎈')
   const response = await deepRequest<DeepHistoryResponse>(`/api/conversations/${conversationId}/chat`, {
     method: 'GET'
   });

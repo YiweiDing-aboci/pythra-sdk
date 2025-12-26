@@ -1,4 +1,4 @@
-import { deepRequest } from '../client/request';
+import { deepRequest } from './request';
 import { PythraClient } from '../client/PythraClient';
 
 /**
