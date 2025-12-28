@@ -1,6 +1,6 @@
 import { chunkTest } from "../mock/chunk copy";
 import { DeepSetMessage } from "../types";
-import { processDeepMessage } from "../utils/processDeepMessage";
+import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessage";
 import { extractPlainText } from "../utils/tools";
 
 interface SendStreamRequestParams {

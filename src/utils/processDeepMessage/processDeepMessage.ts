@@ -1,5 +1,6 @@
-import { getChatExtract } from "../api/getChatExtract";
-import { EntityItem, ProcessedMessageData } from "../types";
+import { getChatExtract } from "../../api/getChatExtract";
+import { EntityItem, ProcessedMessageData } from "../../types";
+import { transformMarketHeatMap } from "./transformJson/market-heatmap";
 
 function getCodePointIndexMap(inputString: string) {
   let indexMap = new Map();
@@ -73,6 +74,9 @@ function processContentWithJson(input: string): {
     const placeholder = `{{JSON_${jsonIndex}}}`;
     try {
       jsonBt[placeholder] = JSON.parse(jsonContent.trim());
+      if (jsonBt[placeholder]?.chartType === 'market-heatmap') {
+        jsonBt[placeholder] = transformMarketHeatMap(jsonBt[placeholder])
+      }
     } catch (e) {
       jsonBt[placeholder] = {};
     }

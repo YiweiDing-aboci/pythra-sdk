@@ -1,6 +1,6 @@
 import { DeepSetMessage } from "../types";
 import { PythraClient } from '../client/PythraClient';
-import { processDeepMessage } from "../utils/processDeepMessage";
+import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessage";
 
 
 interface SendStreamRequestParams {

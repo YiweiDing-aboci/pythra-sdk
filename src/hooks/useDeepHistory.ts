@@ -2,7 +2,7 @@ import { useCallback, useState } from "react"
 import { extractPlainText } from "../utils/tools"
 import { getDeepHistory } from "../api/chatHistory"
 import { DeepBotMessage, DeepHumanMessage, DeepMessage, DeepSetMessage, DeepStep } from "../types"
-import { processDeepMessage } from "../utils/processDeepMessage"
+import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessage"
 
 export function useDeepHistory() : {
   messages: DeepMessage[],
