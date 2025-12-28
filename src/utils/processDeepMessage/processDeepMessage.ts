@@ -1,6 +1,12 @@
 import { getChatExtract } from "../../api/getChatExtract";
 import { EntityItem, ProcessedMessageData } from "../../types";
+import { transformCapitalFlowChart } from "./transformJson/capital-flow";
+import { transformFearGreedOptions } from "./transformJson/fear-greed";
+import { transformFuturesExchange } from "./transformJson/futures-exchange";
+import { transformMacroAsset } from "./transformJson/macro-asset";
 import { transformMarketHeatMap } from "./transformJson/market-heatmap";
+import { transformOptionsMaxPainOptions } from "./transformJson/options-max-pain";
+import { transformSpotFlowOptions } from "./transformJson/spot-flow";
 
 function getCodePointIndexMap(inputString: string) {
   let indexMap = new Map();
@@ -76,6 +82,18 @@ function processContentWithJson(input: string): {
       jsonBt[placeholder] = JSON.parse(jsonContent.trim());
       if (jsonBt[placeholder]?.chartType === 'market-heatmap') {
         jsonBt[placeholder] = transformMarketHeatMap(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'crypto-capital-flow') {
+        jsonBt[placeholder] = transformCapitalFlowChart(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'crypto-spot-flow') {
+        jsonBt[placeholder] = transformSpotFlowOptions(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'fear-index') {
+        jsonBt[placeholder] = transformFearGreedOptions(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'futures-oi-exchange-heatmap') {
+        jsonBt[placeholder] = transformFuturesExchange(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'options-oi-max-pain') {
+        jsonBt[placeholder] = transformOptionsMaxPainOptions(jsonBt[placeholder])
+      } else if (jsonBt[placeholder]?.chartType === 'macro-data-analysis') {
+        jsonBt[placeholder] = transformMacroAsset(jsonBt[placeholder])
       }
     } catch (e) {
       jsonBt[placeholder] = {};
