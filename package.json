@@ -1,6 +1,6 @@
 {
   "name": "pythra-sdk",
-  "version": "0.1.4",
+  "version": "0.1.5",
   "description": "Pythra SDK for React Native applications",
   "keywords": ["react", "react-native", "pythra", "sdk"],
   "author": "",
