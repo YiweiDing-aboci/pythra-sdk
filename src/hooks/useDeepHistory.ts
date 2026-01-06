@@ -7,13 +7,13 @@ import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessa
 export function useDeepHistory() : {
   messages: DeepMessage[],
   setMessages: DeepSetMessage,
-  getHistory: (conversationId: string) => Promise<void>}
+  getHistory: (conversationId: string) => Promise<any>}
 {
   const [messages, setMessages] = useState<DeepMessage[]>([])
 
   const getHistory = useCallback(async (conversationId: string) => {
     const res = await requestDeepHistory(conversationId)
-    setMessages(res)
+    setMessages(res.history)
 
     // 后台处理 bot 消息，逐个更新 processData
     setTimeout(async() => {
@@ -37,6 +37,7 @@ export function useDeepHistory() : {
         }
       }
     }, 500)
+    return res.resumeData
   }, [])
 
   return {
@@ -46,11 +47,20 @@ export function useDeepHistory() : {
   }
 }
 
-async function requestDeepHistory (conversationId: string) {
+async function requestDeepHistory (conversationId: string) : Promise<any> {
   const history: DeepMessage[] = []
   const historyResponse = await getDeepHistory(conversationId)
-  if (!historyResponse.success) return history
-  for (const m of historyResponse.data.messages[0]) {
+  if (!historyResponse.success) return {history, resumeData: false}
+  const historyResult = historyResponse.data.messages[0]
+  let resumeData: any = false
+  if (historyResult.length > 0 && historyResult[historyResult.length - 1].role === 'assistant' && !historyResult[historyResult.length - 1]?.content) {
+    resumeData = {
+      searchId: historyResult[historyResult.length - 1].searchId,
+      query:  historyResult[historyResult.length - 2].content,
+    }
+  }
+
+  for (const m of historyResult) {
     if (m.role === 'user') {
       const userMessage: DeepHumanMessage = {
         type: 'human',
@@ -75,7 +85,8 @@ async function requestDeepHistory (conversationId: string) {
       history.push(botMessage)
     }
   }
-  return history
+  
+  return {history, resumeData: resumeData}
 }
 
 function processThinkStatus (thinkStatus: any[]): DeepStep[] {

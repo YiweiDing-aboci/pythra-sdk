@@ -1,6 +1,7 @@
 import { DeepSetMessage } from "../types";
 import { PythraClient } from '../client/PythraClient';
 import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessage";
+import { conversationCacheManager } from "../client/Managers/ConversationCacheManager";
 
 
 interface SendStreamRequestParams {
@@ -8,10 +9,11 @@ interface SendStreamRequestParams {
   query: string;
   retry?: boolean;
   setMessages: DeepSetMessage;
+  searchId?: string;
 }
 
-export async function sendStreamRequest (params: SendStreamRequestParams) {
-  const { conversationId, query, retry = false, setMessages } = params;
+export function sendStreamRequest (params: SendStreamRequestParams) : {promise: Promise<void>, abort: () => void} {
+  const { conversationId, query, retry = false, setMessages, searchId = '' } = params;
   let xhr: XMLHttpRequest | null = null;
 
   const {deepUrl, deepAccessToken, accessToken} = PythraClient.getConfig()
@@ -27,7 +29,10 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
     let buffer = '';
     let lastProcessedIndex = 0;
 
-    xhr.open('POST', `${deepUrl}/api/conversations/${conversationId}/stream`, true);
+    xhr.open('POST', 
+      searchId ? `${deepUrl}/api/conversations/resume/${searchId}` 
+        : `${deepUrl}/api/conversations/${conversationId}/stream`,
+      true);
     xhr.setRequestHeader('Content-Type', 'application/json, text/event-stream');
     xhr.setRequestHeader('Accept', '*/*');
     xhr.setRequestHeader('Cache-Control', 'no-cache');
@@ -39,8 +44,8 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
     let responseMessage = ''
 
     xhr.onprogress = async() => {
-        const newData = xhr.responseText.substring(lastProcessedIndex);
-        lastProcessedIndex = xhr.responseText.length;
+        const newData = xhr!.responseText.substring(lastProcessedIndex);
+        lastProcessedIndex = xhr!.responseText.length;
         
         if (newData) {
           buffer += newData;
@@ -62,6 +67,7 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
               
               try {
                 const chunk = JSON.parse(jsonStr);
+                console.log(conversationId+searchId, '🚀🚀🚀🚀🚀🚀🚀🚀\n\n\n\n', chunk,'\n\n\n\n🎈🎈🎈🎈🎈🎈🎈🎈🎈')
                 //#region 处理片段
                 if (chunk?.type === 'think') {
                   setMessages(pre => {
@@ -157,6 +163,14 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
                     }
                     return [...pre, lastMessage!]
                   })
+                  conversationCacheManager.delete(conversationId);
+                  resolve();
+                } else if (chunk?.success) {
+                  conversationCacheManager.store({
+                    conversationId,
+                    query: query,
+                    searchId: chunk?.data?.searchId,
+                  })
                 }
                 //#endregion
 
@@ -174,20 +188,20 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
 
     xhr.onerror = (ev: ProgressEvent<EventTarget>) => {
       console.error('XMLHttpRequest 错误:', {
-        readyState: xhr.readyState,
-        status: xhr.status,
-        statusText: xhr.statusText,
-        responseURL: xhr.responseURL,
+        readyState: xhr!.readyState,
+        status: xhr!.status,
+        statusText: xhr!.statusText,
+        responseURL: xhr!.responseURL,
         event: ev
       });
 
       let errorMessage = '网络请求失败';
-      if (xhr.status === 0) {
+      if (xhr!.status === 0) {
         errorMessage = '无法连接到服务器，请检查网络连接或服务器是否可用';
-      } else if (xhr.status >= 400 && xhr.status < 500) {
-        errorMessage = `客户端错误 (${xhr.status})`;
-      } else if (xhr.status >= 500) {
-        errorMessage = `服务器错误 (${xhr.status})`;
+      } else if (xhr!.status >= 400 && xhr!.status < 500) {
+        errorMessage = `客户端错误 (${xhr!.status})`;
+      } else if (xhr!.status >= 500) {
+        errorMessage = `服务器错误 (${xhr!.status})`;
       }
 
       reject(new Error(errorMessage));
@@ -197,7 +211,11 @@ export async function sendStreamRequest (params: SendStreamRequestParams) {
       reject(new Error('请求超时'));
     };
 
-    xhr.send(JSON.stringify({
+    xhr.send(JSON.stringify(searchId ? {
+      query,
+      retry,
+      alfagptToken: PythraClient.getAccessToken()
+    } : {
       query,
       retry,
       accessToken
