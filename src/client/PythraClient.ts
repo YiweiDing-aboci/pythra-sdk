@@ -22,11 +22,11 @@ class PythraClientClass {
    * @throws Error if config is invalid
    */
   configure(config: PythraConfig): void {
-    test()
     if (!config.baseUrl || !config.deepUrl || !config.accessToken || !config.deepAccessToken) {
       throw new Error('PythraClient: baseUrl, deepUrl, accessToken, and deepAccessToken are required');
     }
     this.config = { ...config };
+    test()
   }
 
   /**

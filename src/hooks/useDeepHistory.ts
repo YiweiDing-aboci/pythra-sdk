@@ -53,11 +53,19 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
   if (!historyResponse.success) return {history, resumeData: false}
   const historyResult = historyResponse.data.messages[0]
   let resumeData: any = false
-  if (historyResult.length > 0 && historyResult[historyResult.length - 1].role === 'assistant' && !historyResult[historyResult.length - 1]?.content) {
-    resumeData = {
-      searchId: historyResult[historyResult.length - 1].searchId,
-      query:  historyResult[historyResult.length - 2].content,
+  if (historyResult.length > 0 && historyResult[historyResult.length - 1].role === 'assistant') {
+    if (historyResult[historyResult.length - 1]?.content) {
+      resumeData = {
+        searchId: null,
+        query:  historyResult[historyResult.length - 2].content,
+      }
+    } else {
+      resumeData = {
+        searchId: historyResult[historyResult.length - 1].searchId,
+        query:  historyResult[historyResult.length - 2].content,
+      }
     }
+    
   }
 
   for (const m of historyResult) {
