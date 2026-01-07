@@ -17,8 +17,8 @@ export function useDeepHistory() : {
 
     // 后台处理 bot 消息，逐个更新 processData
     setTimeout(async() => {
-      for (let i = 0; i < res.length; i++) {
-        const m = res[i]
+      for (let i = 0; i < res.history.length; i++) {
+        const m = res.history[i]
         if (m.type === 'bot') {
           try {
             const processResult = await processDeepMessage(m.content, true)
