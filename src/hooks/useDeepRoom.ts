@@ -22,12 +22,14 @@ export function useDeepRoom() {
     const newUserMessage: DeepMessage = {
       id: Date.now() + 'user',
       type: 'human',
-      content: query
+      content: query,
+      conversationId: conversationId || ''
     }
     const newBotMessage: DeepMessage = {
       id: Date.now() + 'bot',
       type: 'bot',
       content: '',
+      conversationId: conversationId || '',
       isCreating: true,
       isThinking: true,
       head: {
