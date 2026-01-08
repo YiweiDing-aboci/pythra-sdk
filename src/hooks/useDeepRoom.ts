@@ -108,6 +108,7 @@ export function useDeepRoom() {
     sendMessage,
     setConversationId,
     recommendations,
-    isWaitingForResponse
+    isWaitingForResponse,
+    conversationId
   }
 }

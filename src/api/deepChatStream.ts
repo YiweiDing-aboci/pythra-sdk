@@ -161,6 +161,7 @@ export function sendStreamRequest (params: SendStreamRequestParams) : {promise: 
                     if (lastMessage?.type && lastMessage.type === 'bot') {
                       lastMessage.isCreating = false;
                       lastMessage.processData = processResult
+                      lastMessage.conversationId = conversationId
                     }
                     return [...pre, lastMessage!]
                   })

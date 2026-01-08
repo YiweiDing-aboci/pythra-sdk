@@ -73,6 +73,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
       const userMessage: DeepHumanMessage = {
         type: 'human',
         id: Date.now() + 'user',
+        conversationId,
         content: m.content
       }
       history.push(userMessage)
@@ -82,6 +83,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
         type: 'bot',
         id: Date.now() + 'bot',
         content: m.content,
+        conversationId,
         processData: await processDeepMessage(m.content)
       }
       if (metadata?.sources && metadata?.sources.length > 0) {

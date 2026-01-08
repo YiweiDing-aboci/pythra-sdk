@@ -6,7 +6,8 @@ import { Dispatch, SetStateAction } from "react"
 export interface DeepHumanMessage {
   type: "human"
   id: string
-  content: string
+  content: string,
+  conversationId: string
 }
 
 /**
@@ -75,6 +76,7 @@ export interface DeepBotMessage {
   type: "bot"
   id: string
   content: string
+  conversationId: string
   isThinking?: boolean
   isCreating?: boolean
   processData: ProcessedMessageData
