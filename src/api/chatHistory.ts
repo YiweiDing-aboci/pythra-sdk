@@ -54,7 +54,7 @@ interface DeepHistoryResponse {
  * @internal
  */
 export async function getDeepHistory(conversationId: string): Promise<DeepHistoryResponse> {
-  const response = await deepRequest<DeepHistoryResponse>(`/api/conversations/${conversationId}/chat`, {
+  const response = await deepRequest<DeepHistoryData>(`/api/conversations/${conversationId}/chat`, {
     method: 'GET'
   });
 

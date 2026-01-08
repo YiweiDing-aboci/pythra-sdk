@@ -2,6 +2,7 @@ import { DeepSetMessage } from "../types";
 import { PythraClient } from '../client/PythraClient';
 import { processDeepMessage } from "../utils/processDeepMessage/processDeepMessage";
 import { conversationCacheManager } from "../client/Managers/ConversationCacheManager";
+import { extractPlainText } from "../utils/tools";
 
 
 interface SendStreamRequestParams {
@@ -231,12 +232,3 @@ export function sendStreamRequest (params: SendStreamRequestParams) : {promise: 
     }
   };
 };
-
-
-function extractPlainText(markdown: string): string {
-  return markdown
-    .replace(/[*#`_~\[\]()]/g, '') // 移除 markdown 格式字符
-    .replace(/\n/g, '') // 移除换行
-    .trim()
-    .slice(0, 50);
-}

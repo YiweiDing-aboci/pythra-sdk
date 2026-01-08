@@ -10,6 +10,14 @@ interface RequestOptions {
 }
 
 /**
+ * Standard API response wrapper
+ */
+export interface ApiResponse<T> {
+  success: boolean;
+  data: T;
+}
+
+/**
  * Internal function to make requests to baseUrl
  * @param endpoint - API endpoint (e.g., '/users')
  * @param options - Request options
@@ -54,7 +62,7 @@ export async function request<T = any>(
 export async function deepRequest<T = any>(
   endpoint: string,
   options: RequestOptions = {}
-): Promise<T> {
+): Promise<ApiResponse<T>> {
   const deepUrl = PythraClient.getDeepUrl();
   const deepAccessToken = PythraClient.getDeepAccessToken();
 

@@ -12,7 +12,7 @@ export interface RecommendResponse {
 }
 
 export async function getRecommend(query: string): Promise<RecommendData> {
-  const response = await deepRequest<RecommendResponse>('/api/search/recommend', {
+  const response = await deepRequest<RecommendData>('/api/search/recommend', {
     method: 'POST',
     body: {
       query

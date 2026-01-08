@@ -1,5 +1,10 @@
 import { request } from "./request";
 
+interface UsageDetail {
+  name: string;
+  value: number;
+}
+
 interface UsageLimitDetail {
   total: number;
   interval: string;
@@ -12,7 +17,7 @@ interface UsagePeriod {
 
 interface UsageQuotaExtra {
   total: number;
-  details: any[];
+  details: UsageDetail[];
 }
 
 interface UsageQuota {
@@ -23,7 +28,7 @@ interface UsageQuota {
 
 interface UsageQuotaBase {
   total: number;
-  details: any[];
+  details: UsageDetail[];
 }
 
 interface UsageCheckLimit {
