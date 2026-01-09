@@ -51,7 +51,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
   const history: DeepMessage[] = []
   const historyResponse = await getDeepHistory(conversationId)
   if (!historyResponse.success) return {history, resumeData: false}
-  const historyResult = historyResponse.data.messages[0]
+  const historyResult = historyResponse.data.messages.flat()
   let resumeData: any = false
   if (historyResult.length > 0 && historyResult[historyResult.length - 1].role === 'assistant') {
     if (historyResult[historyResult.length - 1]?.content) {
