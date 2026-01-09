@@ -4,6 +4,8 @@ import { createConversation } from "../api/conversation";
 import { sendStreamRequest } from "../api/deepChatStream";
 import { useDeepHistory } from "./useDeepHistory";
 import { getRecommend } from "../api/recommend";
+import { cancelStream } from "../api/cancelStream";
+import { conversationCacheManager } from "../client/Managers/ConversationCacheManager";
 
 export function useDeepRoom() {
   const abortRef = useRef<(() => void) | null>(null);
@@ -80,6 +82,15 @@ export function useDeepRoom() {
     }
   }, [])
 
+  const cancelRequest = useCallback(() => {
+    if (abortRef.current) {
+      abortRef.current()
+      if (conversationId && conversationCacheManager.getSearchId(conversationId)) {
+        cancelStream(conversationCacheManager.getSearchId(conversationId)!)
+      }
+    }
+  }, [conversationId])
+
   const getHistory = useCallback(async(id: string) => {
     const res = await requestHistory(id)
     if (res) {
@@ -111,6 +122,7 @@ export function useDeepRoom() {
     setConversationId,
     recommendations,
     isWaitingForResponse,
-    conversationId
+    conversationId,
+    cancelRequest
   }
 }
