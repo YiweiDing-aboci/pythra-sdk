@@ -84,6 +84,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
         id: Date.now() + 'bot',
         content: m.content,
         conversationId,
+        hasCanceled: m.stopped,
         processData: await processDeepMessage(m.content)
       }
       if (metadata?.sources && metadata?.sources.length > 0) {
