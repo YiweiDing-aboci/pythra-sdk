@@ -1,3 +1,7 @@
+import { Dimensions } from "react-native";
+
+const { width } = Dimensions.get("window");
+
 export function extractDomain(url: string) {
     try {
         const hostname = new URL(url).hostname; 
@@ -94,4 +98,9 @@ export function extractPlainText(markdown: string): string {
     .replace(/\n/g, '') // 移除换行
     .trim()
     .slice(0, 50);
+}
+
+export function rem(size: number): number {
+  const scale = width / 375;
+  return size * scale;
 }

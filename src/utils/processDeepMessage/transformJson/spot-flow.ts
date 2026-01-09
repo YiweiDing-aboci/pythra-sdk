@@ -1,14 +1,50 @@
 export function transformSpotFlowOptions(rawData: any) {
-  if (!rawData || !rawData.legends || !rawData.legends.btc) return {};
+  if (!rawData || !rawData.legends) return {};
 
-  const btcData = rawData.legends.btc;
+  // 动态获取第一个可用的加密货币数据
+  const cryptoKeys = Object.keys(rawData.legends);
+  if (cryptoKeys.length === 0) return {};
 
-  // 1. 数据解析
-  const dates = btcData.map((item: any) => item.date);
-  const prices = btcData.map((item: any) => item.price.toFixed(0));
-  
-  // 净流入数据处理：单位转为 M (百万)
-  const netflows = btcData.map((item: any) => (item.netflow / 1000000).toFixed(2));
+  // 获取第一个加密货币的数据（btc, eth, 或其他）
+  const cryptoKey = cryptoKeys[0];
+  const cryptoData = rawData.legends[cryptoKey];
+
+  if (!cryptoData) return {};
+
+  // 1. 数据解析 - 格式化日期，只显示月-日
+  const dates = cryptoData.map((item: any) => {
+    // 假设 item.date 格式为 "2024-12-25" 或类似格式
+    const dateStr = item.date;
+    if (dateStr && dateStr.includes('-')) {
+      const parts = dateStr.split('-');
+      if (parts.length >= 3) {
+        // 返回 MM-DD 格式
+        return `${parts[1]}-${parts[2]}`;
+      }
+    }
+    return dateStr;
+  });
+  const prices = cryptoData.map((item: any) => item.price.toFixed(0));
+
+  // 流入流出数据处理：单位转为 M (百万)
+  // 注意：如果原数据只有 netflow，需要根据正负值来区分 inflow/outflow
+  const inflows = cryptoData.map((item: any) => {
+    if (item.inflow !== undefined) {
+      return (Math.abs(item.inflow) / 1000000).toFixed(2);
+    }
+    // 如果没有 inflow 字段，使用 netflow 的正值
+    return item.netflow > 0 ? (item.netflow / 1000000).toFixed(2) : 0;
+  });
+
+  const outflows = cryptoData.map((item: any) => {
+    if (item.outflow !== undefined) {
+      return (-Math.abs(item.outflow) / 1000000).toFixed(2);
+    }
+    // 如果没有 outflow 字段，使用 netflow 的负值
+    return item.netflow < 0 ? (item.netflow / 1000000).toFixed(2) : 0;
+  });
+
+  const netflows = cryptoData.map((item: any) => (item.netflow / 1000000).toFixed(2));
 
   return {
     backgroundColor: 'transparent',
@@ -20,7 +56,7 @@ export function transformSpotFlowOptions(rawData: any) {
     },
     // 图例：支持点击切换显示/隐藏
     legend: {
-      data: ['Netflow', 'Price'],
+      data: ['Inflow', 'Outflow', 'Price'],
       top: 45,
       right: 20,
       textStyle: { color: '#ccc', fontSize: 12 }
@@ -28,7 +64,7 @@ export function transformSpotFlowOptions(rawData: any) {
     grid: {
       left: '3%',
       right: '3%',
-      bottom: '12%', // 留出空间给 dataZoom 或 X轴标签
+      bottom: '15%', // 增加底部空间给 dataZoom 和旋转的标签
       top: '25%',
       containLabel: true
     },
@@ -38,6 +74,23 @@ export function transformSpotFlowOptions(rawData: any) {
         type: 'inside', // 手指直接在图表上滑动缩放
         start: 0,
         end: 100
+      },
+      {
+        type: 'slider', // 添加底部滑块控制
+        show: true,
+        start: 0,
+        end: 100,
+        bottom: '2%',
+        height: 20,
+        textStyle: {
+          color: '#888'
+        },
+        borderColor: '#333',
+        fillerColor: 'rgba(255,255,255,0.1)',
+        handleStyle: {
+          color: '#666',
+          borderColor: '#888'
+        }
       }
     ],
     tooltip: {
@@ -50,9 +103,27 @@ export function transformSpotFlowOptions(rawData: any) {
         let res = `${params[0].name}\n`;
         params.forEach((p: any) => {
           const isPrice = p.seriesName === 'Price';
-          const value = isPrice ? `$${p.value.toLocaleString()}` : `${p.value}M`;
-          const color = !isPrice && p.value >= 0 ? '#00C853' : (isPrice ? '#F39C12' : '#D32F2F');
-          res += `${p.marker} ${p.seriesName}: <span style="color:${color}">${value}</span>\n`;
+          const isInflow = p.seriesName === 'Inflow';
+          const isOutflow = p.seriesName === 'Outflow';
+
+          let value = '';
+          let color = '';
+
+          if (isPrice) {
+            value = `$${p.value.toLocaleString()}`;
+            color = '#F39C12';
+          } else if (isInflow) {
+            value = `${p.value}M`;
+            color = '#00C853';
+          } else if (isOutflow) {
+            value = `${p.value}M`;
+            color = '#D32F2F';
+          } else {
+            value = `${p.value}M`;
+            color = p.value >= 0 ? '#00C853' : '#D32F2F';
+          }
+
+          res += `${p.marker} ${p.seriesName}: ${value}\n`;
         });
         return res;
       }
@@ -64,24 +135,40 @@ export function transformSpotFlowOptions(rawData: any) {
       axisLabel: {
         color: '#888',
         fontSize: 10,
-        // 根据数据量自动调整标签密度
-        interval: btcData.length > 30 ? 'auto' : 0, 
-        rotate: btcData.length > 15 ? 45 : 0 // 超过15天数据自动旋转防止重叠
+        // 根据数据量自动调整标签密度和旋转角度
+        interval: (index: number, value: string) => {
+          // 根据数据总量动态计算间隔
+          const totalPoints = cryptoData.length;
+          if (totalPoints <= 7) {
+            return true; // 显示所有标签
+          } else if (totalPoints <= 14) {
+            return index % 2 === 0; // 每隔1个显示
+          } else if (totalPoints <= 30) {
+            return index % 4 === 0; // 每隔3个显示
+          } else if (totalPoints <= 60) {
+            return index % 7 === 0; // 每隔6个显示
+          } else if (totalPoints <= 90) {
+            return index % 10 === 0; // 每隔9个显示
+          } else {
+            return index % 15 === 0; // 每隔14个显示
+          }
+        },
+        rotate: 45 // 始终使用45度旋转，避免重叠
       }
     },
     yAxis: [
       {
         type: 'value',
-        name: 'Netflow (M)',
+        name: 'Flow (M)',
         splitLine: { lineStyle: { color: '#222', type: 'dashed' } },
-        axisLabel: { 
+        axisLabel: {
           color: '#888',
           formatter: (v: any) => `${v}M`
         }
       },
       {
         type: 'value',
-        name: 'Price',
+        name: 'Price ($)',
         position: 'right',
         splitLine: { show: false },
         // 优化价格轴范围，确保折线在柱状图上方，不影响阅读
@@ -89,20 +176,34 @@ export function transformSpotFlowOptions(rawData: any) {
         max: (value: any) => Math.ceil(value.max * 1.05),
         axisLabel: {
           color: '#F39C12',
-          formatter: (v: any) => `$${(v / 1000).toFixed(0)}K`
+          formatter: (v: any) => {
+            if (v >= 1000) {
+              return `$${(v / 1000).toFixed(2)}K`;
+            }
+            return `$${v}`;
+          }
         }
       }
     ],
     series: [
       {
-        name: 'Netflow',
+        name: 'Inflow',
         type: 'bar',
-        data: netflows,
-        // 动态颜色：正数为绿，负数为红
+        data: inflows,
         itemStyle: {
-          color: (params: any) => params.value >= 0 ? '#00C853' : '#D32F2F'
+          color: '#00C853'
         },
-        barMaxWidth: 20 // 限制柱子最大宽度，防止7D模式下柱子过粗
+        barMaxWidth: 15,
+        barGap: '10%'
+      },
+      {
+        name: 'Outflow',
+        type: 'bar',
+        data: outflows,
+        itemStyle: {
+          color: '#D32F2F'
+        },
+        barMaxWidth: 15
       },
       {
         name: 'Price',
@@ -112,7 +213,8 @@ export function transformSpotFlowOptions(rawData: any) {
         smooth: true,
         showSymbol: false,
         lineStyle: { color: '#F39C12', width: 2 },
-        itemStyle: { color: '#F39C12' }
+        itemStyle: { color: '#F39C12' },
+        z: 10 // 确保线在柱状图上方
       }
     ]
   };

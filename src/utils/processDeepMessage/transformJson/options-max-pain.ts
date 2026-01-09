@@ -1,3 +1,5 @@
+import { rem } from "../../tools";
+
 export function transformOptionsMaxPainOptions(rawData: any) {
   if (!rawData || !rawData.legends || !rawData.legends.data) return null;
 
@@ -25,21 +27,59 @@ export function transformOptionsMaxPainOptions(rawData: any) {
     },
     tooltip: {
       trigger: 'axis',
+      confine: true,
       axisPointer: { type: 'shadow' },
       backgroundColor: 'rgba(30, 30, 30, 0.9)',
       textStyle: { color: '#fff' }
     },
     legend: {
       data: ['Call OI MV', 'Put OI MV', 'Max Pain Price'],
-      bottom: '5%',
+      bottom: 10,  // 调整到最底部
       textStyle: { color: '#ccc' }
     },
     grid: {
       left: '3%',
       right: '4%',
-      bottom: '15%',
+      bottom: rem(40),  // 进一步增加底部空间
       containLabel: true
     },
+    dataZoom: [
+      {
+        type: 'slider',  // 滑动条型
+        show: true,
+        xAxisIndex: [0],
+        start: 0,
+        end: 100,
+        bottom: rem(35),  // 调整滑动条位置，在legend上方
+        height: rem(10),
+        backgroundColor: 'rgba(47,69,84,0.2)',
+        dataBackground: {
+          lineStyle: {
+            color: '#444'
+          },
+          areaStyle: {
+            color: 'rgba(47,69,84,0.3)'
+          }
+        },
+        fillerColor: 'rgba(47,69,84,0.7)',
+        handleStyle: {
+          color: '#fff',
+          borderColor: '#ACB8D1'
+        },
+        textStyle: {
+          color: '#888'
+        },
+        borderColor: '#333'
+      },
+      {
+        type: 'inside',  // 内置型，支持鼠标滚轮缩放
+        xAxisIndex: [0],
+        start: 0,
+        end: 100,
+        zoomOnMouseWheel: true,
+        moveOnMouseMove: true
+      }
+    ],
     xAxis: {
       type: 'category',
       data: xAxisData,

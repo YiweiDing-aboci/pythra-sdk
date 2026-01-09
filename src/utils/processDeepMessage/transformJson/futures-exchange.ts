@@ -37,6 +37,7 @@ export function transformFuturesExchange(rawData: any) {
       },
       tooltip: {
         trigger: 'item',
+        confine: true,
         backgroundColor: 'rgba(30, 30, 30, 0.9)',
         textStyle: { color: '#fff', fontSize: 12 },
         formatter: (info: any) => {

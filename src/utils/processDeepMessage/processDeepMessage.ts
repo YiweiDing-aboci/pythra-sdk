@@ -81,19 +81,21 @@ function processContentWithJson(input: string): {
     try {
       jsonBt[placeholder] = JSON.parse(jsonContent.trim());
       if (jsonBt[placeholder]?.chartType === 'market-heatmap') {
-        jsonBt[placeholder] = transformMarketHeatMap(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformMarketHeatMap(jsonBt[placeholder])
       } else if (jsonBt[placeholder]?.chartType === 'crypto-capital-flow') {
-        jsonBt[placeholder] = transformCapitalFlowChart(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformCapitalFlowChart(jsonBt[placeholder])
       } else if (jsonBt[placeholder]?.chartType === 'crypto-spot-flow') {
-        jsonBt[placeholder] = transformSpotFlowOptions(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformSpotFlowOptions(jsonBt[placeholder])
       } else if (jsonBt[placeholder]?.chartType === 'fear-index') {
-        jsonBt[placeholder] = transformFearGreedOptions(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformFearGreedOptions(jsonBt[placeholder])
+        jsonBt[placeholder].hasOption = true
       } else if (jsonBt[placeholder]?.chartType === 'futures-oi-exchange-heatmap') {
-        jsonBt[placeholder] = transformFuturesExchange(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformFuturesExchange(jsonBt[placeholder])
+        jsonBt[placeholder].hasOption = true
       } else if (jsonBt[placeholder]?.chartType === 'options-oi-max-pain') {
-        jsonBt[placeholder] = transformOptionsMaxPainOptions(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformOptionsMaxPainOptions(jsonBt[placeholder])
       } else if (jsonBt[placeholder]?.chartType === 'macro-data-analysis') {
-        jsonBt[placeholder] = transformMacroAsset(jsonBt[placeholder])
+        jsonBt[placeholder].chart = transformMacroAsset(jsonBt[placeholder])
       }
     } catch (e) {
       jsonBt[placeholder] = {};

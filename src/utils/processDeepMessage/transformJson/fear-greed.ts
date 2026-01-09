@@ -25,7 +25,7 @@ export function transformFearGreedOptions(rawData: any) {
         containLabel: true
       },
       tooltip: {
-        trigger: 'axis',
+        trigger: 'axis',confine: true,
         backgroundColor: 'rgba(30, 30, 30, 0.9)',
         textStyle: { color: '#fff', fontSize: 12 },
         formatter: (params: any) => {
@@ -41,12 +41,16 @@ export function transformFearGreedOptions(rawData: any) {
       },
       xAxis: {
         type: 'category',
-        data: dates,
+        data: dates.map((date: string) => {
+          // 格式化日期，只显示月-日
+          const d = new Date(date);
+          return `${(d.getMonth() + 1).toString().padStart(2, '0')}-${d.getDate().toString().padStart(2, '0')}`;
+        }),
         axisLabel: {
           color: '#666',
           fontSize: 10,
-          interval: period === '90D' ? 10 : (period === '30D' ? 4 : 0),
-          rotate: period === '7D' ? 0 : 45
+          interval: period === '90D' ? 14 : (period === '30D' ? 6 : 1),
+          rotate: 45
         },
         axisLine: { lineStyle: { color: '#333' } }
       },
