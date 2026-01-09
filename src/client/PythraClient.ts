@@ -1,4 +1,5 @@
 import { test } from "../hooks/test";
+import { PendingQuestionManager } from "./Managers/PendingQuestionManager";
 
 /**
  * Configuration interface for PythraClient
@@ -15,6 +16,11 @@ export interface PythraConfig {
  */
 class PythraClientClass {
   private config: PythraConfig | null = null;
+  public pendingQuestion: PendingQuestionManager;
+
+  constructor() {
+    this.pendingQuestion = new PendingQuestionManager();
+  }
 
   /**
    * Initialize the Pythra client with configuration
