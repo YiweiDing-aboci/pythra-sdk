@@ -84,6 +84,14 @@ export function useDeepRoom() {
 
   const cancelRequest = useCallback(() => {
     if (abortRef.current) {
+      setMessages((pre: DeepMessage[]) => {
+        const lastMessage = pre[pre.length - 1]
+        if (lastMessage && lastMessage.type === 'bot') {
+          lastMessage.hasCanceled = true
+        }
+        return [...pre]
+      })
+      setIsWaitingForResponse(false)
       abortRef.current()
       if (conversationId && conversationCacheManager.getSearchId(conversationId)) {
         cancelStream(conversationCacheManager.getSearchId(conversationId)!)

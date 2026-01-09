@@ -79,6 +79,7 @@ export interface DeepBotMessage {
   conversationId: string
   isThinking?: boolean
   isCreating?: boolean
+  hasCanceled?: boolean
   processData: ProcessedMessageData
   head?: {
     title: string
