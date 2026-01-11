@@ -125,4 +125,3 @@ class PythraClientClass {
 
 // Export singleton instance
 export const PythraClient = new PythraClientClass();
-export * from "./Managers/BalanceManager"

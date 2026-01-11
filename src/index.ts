@@ -1,4 +1,4 @@
 export * from "./hooks/useDeepRoom"
-export * from "./client/PythraClient"
+export * from "./client"
 export * from "./types"
 export * from "./api"
