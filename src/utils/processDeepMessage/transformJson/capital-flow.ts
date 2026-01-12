@@ -1,7 +1,7 @@
 export function transformCapitalFlowChart(rawData: any) {
-  if (!rawData || !rawData.legends || !rawData.legends.btc) return {};
+  if (!rawData || !rawData.legends) return {};
 
-  const data = rawData.legends.btc;
+  const data = rawData.legends[Object.keys(rawData.legends)[0]];
   
   // 1. 提取维度数据
   const dates = data.map((item: any) => item.date.split('T')[0]); // 格式化日期: 2025-11-25
