@@ -49,8 +49,8 @@ export function useDeepRoom() {
     }
     setMessages(pre => ([...pre, newUserMessage, newBotMessage]))
 
-    let currentId = conversationId
-    if (!currentId) {
+    let currentId = conversationId || ''
+    if (!currentId && !searchId) {
       currentId = await getConversationId(query)
     }
     const { promise, abort } = sendStreamRequest({
