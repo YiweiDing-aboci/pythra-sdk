@@ -1,4 +1,4 @@
-import { useCallback, useState } from "react"
+import { useCallback, useEffect, useState } from "react"
 import { extractPlainText } from "../utils/tools"
 import { getDeepHistory } from "../api/chatHistory"
 import { DeepBotMessage, DeepHumanMessage, DeepMessage, DeepSetMessage, DeepStep } from "../types"
@@ -59,7 +59,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
         searchId: null,
         query:  historyResult[historyResult.length - 2].content,
       }
-    } else {
+    } else if (!historyResult[historyResult.length - 1]?.stopped){
       resumeData = {
         searchId: historyResult[historyResult.length - 1].searchId,
         query:  historyResult[historyResult.length - 2].content,
