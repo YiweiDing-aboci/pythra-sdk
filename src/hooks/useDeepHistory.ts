@@ -107,7 +107,7 @@ function processThinkStatus (thinkStatus: any[]): DeepStep[] {
     const originStep = thinkStatusToSteps.find((step: any) => step.title === taskName);
     if (originStep) { // 如果是同一个,我就进行覆盖操作
       const status = step?.status || 'doing';
-      originStep.status = status;
+      originStep.status = 'done';
       originStep.content = extractPlainText(step?.thinkingContent?.reasoning || '')
 
       // 处理 todo List

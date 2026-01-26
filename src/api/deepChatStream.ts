@@ -162,6 +162,10 @@ export function sendStreamRequest (params: SendStreamRequestParams) : {promise: 
                       lastMessage.isCreating = false;
                       lastMessage.processData = processResult
                       lastMessage.conversationId = conversationId
+                      const steps = lastMessage?.steps || []
+                      steps.forEach((step: any) => {
+                        step.status = 'done';
+                      })
                     }
                     return [...pre, lastMessage!]
                   })
