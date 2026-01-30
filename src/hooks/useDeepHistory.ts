@@ -72,7 +72,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
     if (m.role === 'user') {
       const userMessage: DeepHumanMessage = {
         type: 'human',
-        id: Date.now() + 'user',
+        id: m.messageId,
         conversationId,
         content: m.content
       }
@@ -81,7 +81,7 @@ async function requestDeepHistory (conversationId: string) : Promise<any> {
       const metadata = JSON.parse(m.metadata)
       const botMessage: DeepBotMessage = {
         type: 'bot',
-        id: Date.now() + 'bot',
+        id: m.messageId,
         content: m.content,
         conversationId,
         hasCanceled: m.stopped,
